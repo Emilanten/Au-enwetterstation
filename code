@@ -1,4 +1,3 @@
-[code]
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 
@@ -134,4 +133,3 @@ void loop() {
 
   ESP.deepSleep(300e6); //deep sleep für 300 Sekunden
 }
-[/code]
