@@ -1,138 +1,137 @@
-<pre>
-<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">DHT</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
-<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#d35400">ESP8266WiFi</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+[code]
+#include <DHT.h>
+#include <ESP8266WiFi.h>
 
 
-<font color="#434f54">&#47;&#47; replace with your channel’s thingspeak API key,</font>
-<font color="#00979c">String</font> <font color="#000000">apiKey</font> <font color="#434f54">=</font> <font color="#005c5f">&#34;408UE5S20MC5YZE7&#34;</font><font color="#000000">;</font>
-<font color="#00979c">const</font> <font color="#00979c">char</font><font color="#434f54">*</font> <font color="#000000">ssid</font> <font color="#434f54">=</font> <font color="#005c5f">&#34;FRITZWLAN&#34;</font><font color="#000000">;</font>
-<font color="#00979c">char</font><font color="#434f54">*</font> <font color="#000000">password</font> <font color="#434f54">=</font> <font color="#005c5f">&#34;sebaclauss&#34;</font><font color="#000000">;</font>
-<font color="#95a5a6">&#47;*char* EMAIL_ZU = &#34;photocrack@web.de&#34;;</font>
-<font color="#95a5a6"> &nbsp;char* EMAIL_VON = &#34;sebastian.clauss42@gmail.com&#34;;</font>
-<font color="#95a5a6"> &nbsp;char* SMTP_NAME = &#34;sebastian.clauss42&#34;;</font>
-<font color="#95a5a6"> &nbsp;char* SMTP_PASSWORT = &#34;&#34;;</font>
-<font color="#95a5a6"> &nbsp;char* SMTP_SERVER = &#34;smtp.gmail.com&#34;;</font>
-<font color="#95a5a6"> &nbsp;int SMTP_PORT = 587;*&#47;</font>
+// replace with your channel’s thingspeak API key,
+String apiKey = "408UE5S20MC5YZE7";
+const char* ssid = "FRITZWLAN";
+char* password = "sebaclauss";
+/*char* EMAIL_ZU = "photocrack@web.de";
+  char* EMAIL_VON = "sebastian.clauss42@gmail.com";
+  char* SMTP_NAME = "sebastian.clauss42";
+  char* SMTP_PASSWORT = "";
+  char* SMTP_SERVER = "smtp.gmail.com";
+  int SMTP_PORT = 587;*/
 
 
-<font color="#00979c">const</font> <font color="#00979c">char</font><font color="#434f54">*</font> <font color="#000000">server</font> <font color="#434f54">=</font> <font color="#005c5f">&#34;api.thingspeak.com&#34;</font><font color="#000000">;</font>
-<font color="#5e6d03">#define</font> <font color="#000000">DHTPIN</font> <font color="#000000">13</font> <font color="#434f54">&#47;&#47; Pin, an dem der DHT22 hängt</font>
-<font color="#5e6d03">#define</font> <font color="#000000">DHTPOWERPIN</font> <font color="#000000">14</font>
+const char* server = "api.thingspeak.com";
+#define DHTPIN 13 // Pin, an dem der DHT22 hängt
+#define DHTPOWERPIN 14
 
-<font color="#d35400">ADC_MODE</font><font color="#000000">(</font><font color="#00979c">ADC_VCC</font><font color="#000000">)</font><font color="#000000">;</font>
-<font color="#00979c">unsigned</font> <font color="#00979c">long</font> <font color="#000000">CONNECTIONTIMEOUT</font> <font color="#434f54">=</font> <font color="#000000">60000</font><font color="#000000">;</font>
-<font color="#00979c">unsigned</font> <font color="#00979c">long</font> <font color="#000000">Zeit</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
-<font color="#00979c">byte</font> <font color="#000000">Messungen</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
-<font color="#00979c">byte</font> <font color="#000000">Lesefehler</font> <font color="#434f54">=</font> <font color="#000000">5</font><font color="#000000">;</font>
-<font color="#00979c">float</font> <font color="#000000">Spannung</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
-<font color="#00979c">float</font> <font color="#000000">Warnspannung</font> <font color="#434f54">=</font> <font color="#000000">3100</font><font color="#000000">;</font>
-<font color="#00979c">float</font> <font color="#000000">Grenzspannung</font> <font color="#434f54">=</font> <font color="#000000">3000</font><font color="#000000">;</font>
+ADC_MODE(ADC_VCC);
+unsigned long CONNECTIONTIMEOUT = 60000;
+unsigned long Zeit = 0;
+byte Messungen = 0;
+byte Lesefehler = 5;
+float Spannung = 0;
+float Warnspannung = 3100;
+float Grenzspannung = 3000;
 
-<font color="#434f54">&#47;&#47;DHT dht(DHTPIN, DHT11,15);</font>
-<b><font color="#d35400">DHT</font></b> <font color="#000000">dht</font><font color="#000000">(</font><font color="#000000">DHTPIN</font><font color="#434f54">,</font> <font color="#000000">DHT22</font><font color="#434f54">,</font> <font color="#000000">15</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;bei Verwendung des DHT22</font>
+//DHT dht(DHTPIN, DHT11,15);
+DHT dht(DHTPIN, DHT22, 15); //bei Verwendung des DHT22
 
-<font color="#d35400">WiFiClient</font> <font color="#d35400">client</font><font color="#000000">;</font>
+WiFiClient client;
 
-<font color="#00979c">float</font> <font color="#000000">aTemp</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
-<font color="#00979c">float</font> <font color="#000000">aHumi</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
-
-
-<font color="#00979c">void</font> <font color="#000000">SensorLesen</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Messen&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">DHTPOWERPIN</font><font color="#434f54">,</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">2500</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">aHumi</font> <font color="#434f54">=</font> <font color="#000000">dht</font><font color="#434f54">.</font><font color="#d35400">readHumidity</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">aTemp</font> <font color="#434f54">=</font> <font color="#000000">dht</font><font color="#434f54">.</font><font color="#d35400">readTemperature</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#000000">aHumi</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#000000">aTemp</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#5e6d03">while</font> <font color="#000000">(</font><font color="#d35400">isnan</font><font color="#000000">(</font><font color="#000000">aHumi</font><font color="#000000">)</font> <font color="#434f54">||</font> <font color="#d35400">isnan</font><font color="#000000">(</font><font color="#000000">aTemp</font><font color="#000000">)</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">2500</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">aHumi</font> <font color="#434f54">=</font> <font color="#000000">dht</font><font color="#434f54">.</font><font color="#d35400">readHumidity</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">aTemp</font> <font color="#434f54">=</font> <font color="#000000">dht</font><font color="#434f54">.</font><font color="#d35400">readTemperature</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">Messungen</font><font color="#434f54">++</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">Messungen</font> <font color="#434f54">&gt;=</font> <font color="#000000">Lesefehler</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#d35400">disconnect</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">100</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">restart</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">100</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
- &nbsp;<font color="#000000">}</font>
- &nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">DHTPOWERPIN</font><font color="#434f54">,</font> <font color="#000000">0</font><font color="#000000">)</font><font color="#000000">;</font>
-<font color="#000000">}</font>
-
-<font color="#00979c">void</font> <font color="#000000">Akkuwarnung</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
-
-<font color="#000000">}</font>
-
-<font color="#00979c">void</font> <font color="#000000">DatenSenden</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">connect</font><font color="#000000">(</font><font color="#000000">server</font><font color="#434f54">,</font> <font color="#000000">80</font><font color="#000000">)</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;<font color="#00979c">String</font> <font color="#000000">postStr</font> <font color="#434f54">=</font> <font color="#000000">apiKey</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#005c5f">&#34;&amp;field1=&#34;</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#00979c">String</font><font color="#000000">(</font><font color="#000000">aTemp</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#005c5f">&#34;&amp;field2=&#34;</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#00979c">String</font><font color="#000000">(</font><font color="#000000">aHumi</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#005c5f">&#34;&amp;field3=&#34;</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#00979c">String</font><font color="#000000">(</font><b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">getVcc</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#434f54">.</font><font color="#d35400">substring</font><font color="#000000">(</font><font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#005c5f">&#34;.&#34;</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#00979c">String</font><font color="#000000">(</font><b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">getVcc</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#434f54">.</font><font color="#d35400">substring</font><font color="#000000">(</font><font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">postStr</font> <font color="#434f54">+=</font> <font color="#005c5f">&#34;\r\n\r\n&#34;</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;POST &#47;update HTTP&#47;1.1\n&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Host: api.thingspeak.com\n&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Connection: close\n&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;X-THINGSPEAKAPIKEY: &#34;</font> <font color="#434f54">+</font> <font color="#000000">apiKey</font> <font color="#434f54">+</font> <font color="#005c5f">&#34;\n&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Content-Type: application&#47;x-www-form-urlencoded\n&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Content-Length: &#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#000000">postStr</font><font color="#434f54">.</font><font color="#d35400">length</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;\n\n&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#000000">postStr</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">}</font>
- &nbsp;<font color="#d35400">client</font><font color="#434f54">.</font><font color="#d35400">stop</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">5000</font><font color="#000000">)</font><font color="#000000">;</font>
-<font color="#000000">}</font>
-
-<font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">115200</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#00979c">String</font><font color="#000000">(</font><b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">getVcc</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#434f54">.</font><font color="#d35400">substring</font><font color="#000000">(</font><font color="#000000">0</font><font color="#434f54">,</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;,&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#00979c">String</font><font color="#000000">(</font><b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">getVcc</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#434f54">.</font><font color="#d35400">substring</font><font color="#000000">(</font><font color="#000000">1</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">DHTPOWERPIN</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
-
- &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">getVcc</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">&lt;=</font> <font color="#000000">Grenzspannung</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Grenzspannung&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">deepSleep</font><font color="#000000">(</font><font color="#000000">0</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">100</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">}</font>
-
- &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">getVcc</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">&lt;=</font> <font color="#000000">Warnspannung</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">Akkuwarnung</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">}</font>
-
- &nbsp;<b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#d35400">mode</font><font color="#000000">(</font><font color="#00979c">WIFI_STA</font><font color="#000000">)</font><font color="#000000">;</font>
-
- &nbsp;<b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">ssid</font><font color="#434f54">,</font> <font color="#000000">password</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">Zeit</font> <font color="#434f54">=</font> <font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
-
- &nbsp;<font color="#5e6d03">while</font> <font color="#000000">(</font><b><font color="#d35400">WiFi</font></b><font color="#434f54">.</font><font color="#d35400">status</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">!=</font> <font color="#000000">WL_CONNECTED</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">500</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">-</font> <font color="#000000">Zeit</font> <font color="#434f54">&gt;</font> &nbsp;<font color="#000000">CONNECTIONTIMEOUT</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">deepSleep</font><font color="#000000">(</font><font color="#000000">120e6</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
- &nbsp;<font color="#000000">}</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;WLAN verbunden&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">dht</font><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
-<font color="#000000">}</font>
+float aTemp = 0;
+float aHumi = 0;
 
 
+void SensorLesen() {
+  Serial.print("Messen");
+  digitalWrite(DHTPOWERPIN, 1);
+  delay(2500);
+  aHumi = dht.readHumidity();
+  aTemp = dht.readTemperature();
+  Serial.print(aHumi);
+  Serial.print(aTemp);
+  while (isnan(aHumi) || isnan(aTemp)) {
+    delay(2500);
+    aHumi = dht.readHumidity();
+    aTemp = dht.readTemperature();
+    Messungen++;
+    if (Messungen >= Lesefehler) {
+      WiFi.disconnect();
+      delay(100);
+      ESP.restart();
+      delay(100);
+    }
+  }
+  digitalWrite(DHTPOWERPIN, 0);
+}
 
-<font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;lesen&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">SensorLesen</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Senden&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<font color="#000000">DatenSenden</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
- &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;Warten&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+void Akkuwarnung() {
 
- &nbsp;<b><font color="#d35400">ESP</font></b><font color="#434f54">.</font><font color="#d35400">deepSleep</font><font color="#000000">(</font><font color="#000000">300e6</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47;deep sleep für 300 Sekunden</font>
-<font color="#000000">}</font>
+}
 
-</pre>
+void DatenSenden() {
+  if (client.connect(server, 80)) {
+    String postStr = apiKey;
+    postStr += "&field1=";
+    postStr += String(aTemp);
+    postStr += "&field2=";
+    postStr += String(aHumi);
+    postStr += "&field3=";
+    postStr += String(ESP.getVcc()).substring(0, 1);
+    postStr += ".";
+    postStr += String(ESP.getVcc()).substring(1);
+    postStr += "\r\n\r\n";
+    client.print("POST /update HTTP/1.1\n");
+    client.print("Host: api.thingspeak.com\n");
+    client.print("Connection: close\n");
+    client.print("X-THINGSPEAKAPIKEY: " + apiKey + "\n");
+    client.print("Content-Type: application/x-www-form-urlencoded\n");
+    client.print("Content-Length: ");
+    client.print(postStr.length());
+    client.print("\n\n");
+    client.print(postStr);
+  }
+  client.stop();
+  delay(5000);
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.print(String(ESP.getVcc()).substring(0, 1));
+  Serial.print(",");
+  Serial.print(String(ESP.getVcc()).substring(1));
+  pinMode(DHTPOWERPIN, OUTPUT);
+
+  if (ESP.getVcc() <= Grenzspannung) {
+    Serial.print("Grenzspannung");
+    ESP.deepSleep(0);
+    delay(100);
+  }
+
+  if (ESP.getVcc() <= Warnspannung) {
+    Akkuwarnung();
+  }
+
+  WiFi.mode(WIFI_STA);
+
+  WiFi.begin(ssid, password);
+  Zeit = millis();
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    if (millis() - Zeit >  CONNECTIONTIMEOUT) {
+      ESP.deepSleep(120e6);
+    }
+  }
+  Serial.print("WLAN verbunden");
+  dht.begin();
+}
+
+
+
+void loop() {
+  Serial.print("lesen");
+  SensorLesen();
+  Serial.print("Senden");
+  DatenSenden();
+  Serial.print("Warten");
+
+  ESP.deepSleep(300e6); //deep sleep für 300 Sekunden
+}
+[/code]
